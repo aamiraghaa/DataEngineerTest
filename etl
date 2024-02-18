@@ -1,0 +1,16 @@
+import pandas as pd
+from sqlalchemy import create_engine
+
+engine = create_engine('mysql+pymysql://username:password@localhost:3306/mydatabase')
+
+df = pd.read_sql('SELECT id, name, surname, date_of_birth, country, city FROM internal', engine)
+
+df['name'] = df['name'].str.title()
+df['surname'] = df['surname'].str.title()
+df['country'] = df['country'].str.title()
+df['city'] = df['city'].str.title()
+
+eligible_countries = pd.read_sql('SELECT country FROM eligible_countries', engine)
+df['Eligible'] = df['country'].apply(lambda x: 'Yes' if x in eligible_countries['country'].values else 'No')
+
+df.to_sql('secondary', engine, if_exists='append', index=False)
